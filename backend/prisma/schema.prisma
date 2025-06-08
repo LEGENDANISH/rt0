@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
+  password    String
+  role        String       @default("student")
+  enrollments Enrollment[]
+  comments    Comment[] 
+}
+
+model Course {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String
+  thumbnail   String 
+  price       Float
+  modules     Module[]
+  enrollments Enrollment[]
+}
+
+model Module {
+  id       Int     @id @default(autoincrement())
+  title    String
+  courseId Int
+  course   Course  @relation(fields: [courseId], references: [id])
+  videos   Video[]
+}
+
+model Video {
+  id       Int       @id @default(autoincrement())
+  title    String
+  url      String
+  thumbnail String
+  moduleId Int
+  module   Module    @relation(fields: [moduleId], references: [id])
+  comments Comment[] // ✅ Added reverse relation
+}
+
+model Enrollment {
+  id       Int    @id @default(autoincrement())
+  userId   Int
+  courseId Int
+  user     User   @relation(fields: [userId], references: [id])
+  course   Course @relation(fields: [courseId], references: [id])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  comment   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId  Int
+  videoId Int
+  user    User  @relation(fields: [userId], references: [id])
+  video   Video @relation(fields: [videoId], references: [id])
+}
