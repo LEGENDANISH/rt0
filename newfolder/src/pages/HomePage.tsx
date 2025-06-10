@@ -75,39 +75,21 @@ const HomePage: React.FC = () => {
           Featured Courses
         </h2>
         <div className="relative overflow-hidden rounded-xl shadow-lg bg-white dark:bg-gray-800">
-          <div className="flex space-x-4 p-6">
-            {featuredCourses.map((course) => (
-              <div key={course.id} className="w-full md:w-1/3 flex-shrink-0">
-                <img
-                  src={course.thumbnail}
-                  alt={course.title}
-                  className="w-full h-48 object-cover rounded-t-lg"
-                />
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1">
-                    {course.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                    {course.description}
-                  </p>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="font-bold text-gray-900 dark:text-white">
-                      ₹{course.price.toFixed(2)}
-                    </span>
-                    <span className="text-gray-500 dark:text-gray-400 line-through text-sm">
-                      ₹{course.originalPrice.toFixed(2)}
-                    </span>
-                  </div>
-                  <Link
-                    to={`/courses/${course.id}`}
-                    className="mt-4 inline-block w-full text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
-                  >
-                    View Course
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6">
+  {latestCourses.map((course) => (
+    <Link
+      key={course.id}
+      to={`/courses/${course.id}`}
+      className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
+    >
+      <img
+        src={course.thumbnail}
+        alt={course.title}
+        className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+      />
+    </Link>
+  ))}
+</div>
         </div>
       </section>
 

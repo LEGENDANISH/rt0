@@ -1,5 +1,6 @@
 // Admin
-
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 exports.addVideo = async (req, res) => {
   const { title, url, moduleId, thumbnail } = req.body;
 

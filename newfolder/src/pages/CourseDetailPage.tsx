@@ -169,19 +169,19 @@ const CourseDetailPage: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-12">
             <div className="lg:w-2/3">
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
                 {course.title}
               </h1>
-              <p className="text-xl text-blue-100 mb-8">
+              <p className="text-lg text-blue-100 mb-6">
                 {course.description}
               </p>
 
               {course.tags && course.tags.length > 0 && (
-                <div className="flex flex-wrap gap-3 mb-8">
+                <div className="flex flex-wrap gap-2 mb-6">
                   {course.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm"
+                      className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium"
                     >
                       {tag}
                     </span>
@@ -190,8 +190,8 @@ const CourseDetailPage: React.FC = () => {
               )}
 
               {course.startDate && (
-                <div className="text-blue-100">
-                  <span className="font-semibold">Start Date: </span>
+                <div className="text-blue-100 text-base">
+                  <span className="font-semibold">Starts </span>
                   {formattedStartDate}
                 </div>
               )}
@@ -199,33 +199,32 @@ const CourseDetailPage: React.FC = () => {
 
             {/* Pricing Card */}
             <div className="lg:w-1/3">
-              <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                 <div className="relative">
                   <img
                     src={course.thumbnail}
                     alt={course.title}
-                    className="w-full h-48 object-cover"
-                    
+                    className="w-full h-48 object-cover rounded-t-2xl"
                   />
                 </div>
 
                 <div className="p-6">
-                  <div className="mb-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">PRICE</h3>
-                    <div className="flex items-baseline flex-wrap">
-                      <span className="text-3xl font-bold text-gray-900">
-                        {selectedCurrency} {convertedDiscountedPrice}
+                  <div className="mb-4">
+                    <h3 className="text-base font-bold text-gray-900 mb-2">PRICE</h3>
+                    <div className="flex items-baseline flex-wrap gap-2">
+                      <span className="text-3xl font-extrabold text-gray-900">
+                        {selectedCurrency === 'INR' ? '₹' : selectedCurrency} {convertedDiscountedPrice}
                       </span>
-                      <span className="ml-2 text-lg text-gray-500 line-through">
-                        {selectedCurrency} {convertedFullPrice}
+                      <span className="text-lg text-gray-500 line-through">
+                        {selectedCurrency === 'INR' ? '₹' : selectedCurrency} {convertedFullPrice}
                       </span>
-                      <span className="ml-2 bg-green-100 text-green-800 px-2 py-0.5 rounded text-sm font-medium">
+                      <span className="bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                         {course.discountPercentage}% off
                       </span>
                     </div>
                   </div>
 
-                  <div className="mb-6">
+                  <div className="mb-4">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Choose Currency:
                     </label>
@@ -233,7 +232,7 @@ const CourseDetailPage: React.FC = () => {
                       <select
                         value={selectedCurrency}
                         onChange={(e) => setSelectedCurrency(e.target.value)}
-                        className="block w-full p-2 pr-8 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="block w-full p-3 border border-gray-300 rounded-full appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                       >
                         <option value="INR">INR (₹)</option>
                         <option value="USD">USD ($)</option>
@@ -241,7 +240,7 @@ const CourseDetailPage: React.FC = () => {
                         <option value="GBP">GBP (£)</option>
                       </select>
                       <ChevronDown
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"
                         size={18}
                       />
                     </div>
@@ -263,7 +262,7 @@ const CourseDetailPage: React.FC = () => {
                   <button
                     onClick={handleBuy}
                     disabled={enrollmentLoading}
-                    className={`w-full py-3 px-4 rounded-lg font-medium transition-colors duration-200 mb-3 ${
+                    className={`w-full py-3 px-4 rounded-full font-medium transition-colors duration-200 mb-3 text-base ${
                       enrollmentLoading
                         ? 'bg-gray-400 cursor-not-allowed text-white'
                         : 'bg-blue-600 hover:bg-blue-700 text-white'
@@ -272,7 +271,7 @@ const CourseDetailPage: React.FC = () => {
                     {enrollmentLoading ? 'Processing...' : 'Buy Now'}
                   </button>
 
-                  <button className="w-full bg-blue-100 text-blue-700 hover:bg-blue-200 py-3 px-4 rounded-lg font-medium transition-colors duration-200">
+                  <button className="w-full bg-blue-600 text-white hover:bg-blue-700 py-3 px-4 rounded-full font-medium transition-colors duration-200 text-base">
                     Pay via Crypto
                   </button>
                 </div>
@@ -308,14 +307,14 @@ const CourseDetailPage: React.FC = () => {
         </div>
 
         <div id="overview" className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Course Description</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Description</h2>
           <div className="prose max-w-none">
             <p className="text-gray-700 leading-relaxed">
               {course.description}
             </p>
             {course.syllabus && (
               <div className="mt-8">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">What You'll Learn</h3>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Complete syllabus - https://blog.100xdevs.com/</h3>
                 <div className="text-gray-700 whitespace-pre-line">
                   {course.syllabus}
                 </div>

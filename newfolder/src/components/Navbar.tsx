@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Moon, Sun, Menu, LogOut } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import SignInModal from '../Auth/SignInModal';
-import SignUpModal from '../Auth/SignUpModal';
+import SignInModal from '../Auth_pages/SignInModal';
+import SignUpModal from '../Auth_pages/SignUpModal';
 
 interface NavbarProps {
   onMenuClick: () => void;

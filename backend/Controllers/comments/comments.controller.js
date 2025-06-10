@@ -1,6 +1,7 @@
 // Admin
 // (Assuming these are admin or user actions depending on your auth setup)
-
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 exports.commentOnVideo = async (req, res) => {
   const { videoId, comment } = req.body;
   const userId = req.user.id;

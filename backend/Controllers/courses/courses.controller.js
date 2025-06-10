@@ -1,4 +1,6 @@
 // Admin
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 exports.enrollInCourse = async (req, res) => {
   const { courseId } = req.body;
   

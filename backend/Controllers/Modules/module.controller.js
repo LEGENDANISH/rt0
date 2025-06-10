@@ -1,5 +1,6 @@
 // Admin
-
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 exports.addModule = async (req, res) => {
   const { title, courseId } = req.body;
 
