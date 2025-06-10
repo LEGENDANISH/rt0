@@ -1,24 +1,56 @@
 // src/components/Navbar.tsx
-import React, { useState } from 'react';
-import { Search, Moon, Sun, Menu } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Moon, Sun, Menu, LogOut } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import SignInModal from '../Auth/SignInModal'; // Adjust path accordingly
-import SignUpModal from '../Auth/SignUpModal'; // Optional
+import SignInModal from '../Auth/SignInModal';
+import SignUpModal from '../Auth/SignUpModal';
 
 interface NavbarProps {
   onMenuClick: () => void;
-  onOpenSignUp:()=> void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
   const { theme, toggleTheme } = useTheme();
+
+  // Check for existing authentication on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+      // You might want to validate the token with your backend here
+      // and get user info if the token is valid
+    }
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Searching for:', searchQuery);
+  };
+
+  const handleLogout = () => {
+    // Clear token from localStorage
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    setUser(null);
+    console.log('User logged out');
+  };
+
+  const handleLoginSuccess = (userData: any) => {
+    setIsLoggedIn(true);
+    setUser(userData);
+    console.log('User logged in:', userData);
+  };
+
+  const handleSignUpSuccess = (userData: any) => {
+    setIsLoggedIn(true);
+    setUser(userData);
+    console.log('User signed up:', userData);
   };
 
   return (
@@ -31,6 +63,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
               <button
                 onClick={onMenuClick}
                 className="md:hidden text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                aria-label="Toggle menu"
               >
                 <Menu size={24} />
               </button>
@@ -62,6 +95,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                aria-label="Toggle theme"
               >
                 {theme === 'dark' ? (
                   <Sun className="text-gray-500 dark:text-gray-400" size={20} />
@@ -69,26 +103,75 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
                   <Moon className="text-gray-500" size={20} />
                 )}
               </button>
+              
+              {/* Desktop auth buttons */}
               <div className="hidden md:flex items-center gap-4">
-                <button
-                  onClick={() => setIsSignUpOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-full font-medium transition-colors duration-200"
-                >
-                  Signup
-                </button>
-                <button
-                  onClick={() => setIsSignInOpen(true)}
-                  className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 py-2 px-6 rounded-full font-medium transition-colors duration-200"
-                >
-                  Login
-                </button>
+                {isLoggedIn ? (
+                  <div className="flex items-center gap-4">
+                    {user?.name && (
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Welcome, {user.name}
+                      </span>
+                    )}
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-full font-medium transition-colors duration-200"
+                    >
+                      <LogOut size={18} />
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setIsSignUpOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-full font-medium transition-colors duration-200"
+                    >
+                      Signup
+                    </button>
+                    <button
+                      onClick={() => setIsSignInOpen(true)}
+                      className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 py-2 px-6 rounded-full font-medium transition-colors duration-200"
+                    >
+                      Login
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Mobile auth buttons */}
+              <div className="md:hidden flex items-center gap-2">
+                {isLoggedIn ? (
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded-full text-sm font-medium transition-colors duration-200"
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setIsSignUpOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white py-1 px-3 rounded-full text-sm font-medium transition-colors duration-200"
+                    >
+                      Signup
+                    </button>
+                    <button
+                      onClick={() => setIsSignInOpen(true)}
+                      className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 py-1 px-3 rounded-full text-sm font-medium transition-colors duration-200"
+                    >
+                      Login
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </div>
       </nav>
 
-       {/* Modals */}
+      {/* Modals */}
       <SignInModal
         isOpen={isSignInOpen}
         onClose={() => setIsSignInOpen(false)}
@@ -96,6 +179,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
           setIsSignInOpen(false);
           setIsSignUpOpen(true);
         }}
+        onLoginSuccess={handleLoginSuccess}
       />
 
       <SignUpModal
@@ -105,6 +189,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
           setIsSignUpOpen(false);
           setIsSignInOpen(true);
         }}
+        onSignUpSuccess={handleSignUpSuccess}
       />
     </>
   );

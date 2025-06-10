@@ -7,9 +7,15 @@ interface SignUpModalProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenSignIn: () => void;
+  onSignUpSuccess?: (user: any) => void; // Add this callback
 }
 
-const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onOpenSignIn }) => {
+const SignUpModal: React.FC<SignUpModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  onOpenSignIn,
+  onSignUpSuccess // Add this prop
+}) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -65,10 +71,17 @@ const SignUpModal: React.FC<SignUpModalProps> = ({ isOpen, onClose, onOpenSignIn
       // Save token to localStorage
       localStorage.setItem('token', token);
 
-      // Optionally redirect or refresh page
-      alert('Sign up successful!');
+      // Call success callback to update login state
+      if (onSignUpSuccess) {
+        onSignUpSuccess(user);
+      }
+
+      // Close modal
       onClose();
-      window.location.reload(); // Or use react-router for navigation
+
+      // Optionally reload page or redirect user
+      alert('Sign up successful!');
+      // window.location.reload(); // Remove this if you want to avoid page reload
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message ||

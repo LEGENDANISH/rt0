@@ -41,7 +41,6 @@ const SignInModal: React.FC<SignInModalProps> = ({
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
-
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -49,7 +48,8 @@ const SignInModal: React.FC<SignInModalProps> = ({
     try {
       const response = await axios.post('http://localhost:5000/api/signIn', formData); // Adjust base URL if needed
       const { token, user } = response.data;
-console.log(response.data);
+      console.log(response.data);
+
       // Save token to localStorage
       localStorage.setItem('token', token);
 
@@ -61,8 +61,7 @@ console.log(response.data);
       // Close modal
       onClose();
 
-      // Optionally reload page or redirect user
-      window.location.reload(); // Or use react-router for redirect
+      // Removed window.location.reload() to prevent page refresh
     } catch (err: any) {
       console.error(err);
       const message =

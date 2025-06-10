@@ -26,6 +26,7 @@ model Course {
   description String
   thumbnail   String 
   price       Float
+  originalprice Float
   modules     Module[]
   enrollments Enrollment[]
 }
@@ -34,7 +35,7 @@ model Module {
   id       Int     @id @default(autoincrement())
   title    String
   courseId Int
-  course   Course  @relation(fields: [courseId], references: [id])
+  course   Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
   videos   Video[]
 }
 
@@ -44,16 +45,19 @@ model Video {
   url      String
   thumbnail String
   moduleId Int
-  module   Module    @relation(fields: [moduleId], references: [id])
-  comments Comment[] // ✅ Added reverse relation
+  module   Module    @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  comments Comment[]
 }
 
 model Enrollment {
   id       Int    @id @default(autoincrement())
   userId   Int
   courseId Int
-  user     User   @relation(fields: [userId], references: [id])
-  course   Course @relation(fields: [courseId], references: [id])
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Add unique constraint to prevent duplicate enrollments
+  @@unique([userId, courseId])
 }
 
 model Comment {
@@ -64,6 +68,6 @@ model Comment {
   // Relations
   userId  Int
   videoId Int
-  user    User  @relation(fields: [userId], references: [id])
-  video   Video @relation(fields: [videoId], references: [id])
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video   Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
 }

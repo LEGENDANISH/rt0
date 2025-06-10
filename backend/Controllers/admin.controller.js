@@ -2,10 +2,10 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 exports.addCourse = async (req, res) => {
-  const { title, description, thumbnail,price } = req.body;
+  const { title, description, thumbnail,price,originalprice} = req.body;
   console.log(req.body);
   const course = await prisma.course.create({
-    data: { title, description, thumbnail,price }
+    data: { title, description, thumbnail,price,originalprice }
   });
   res.json(course);
 };  
@@ -29,14 +29,15 @@ exports.updateCourse = async (req, res) => {
   }
 
   // Define allowed fields to update
-  const { title, description, thumbnail, price } = req.body;
+  const { title, description, thumbnail, price,originalprice } = req.body;
   const parsedPrice = parseFloat(price);
+  const parsedoriginalprice = parseFloat(originalprice);
 console.log(req.body);
   // Optional: Validate required fields
-  if (!title || !description || !thumbnail || isNaN(parseFloat(price))) {
+  if (!title || !description || !thumbnail || isNaN(parseFloat(price)) || isNaN(parseFloat(originalprice))) {
     return res.status(400).json({
       message: 'Missing or invalid required fields',
-      required: ['title', 'description', 'thumbnail', 'price'],
+      required: ['title', 'description', 'thumbnail', 'price','originalprice'],
     });
   }
 
@@ -48,6 +49,7 @@ console.log(req.body);
         description,
         thumbnail,
         price:parsedPrice,
+        originalprice:parsedoriginalprice ,
       },
     });
 
@@ -70,21 +72,56 @@ exports.deleteCourse = async (req, res) => {
     // Check if course exists
     const existingCourse = await prisma.course.findUnique({
       where: { id: courseId },
+      include: {
+        modules: {
+          include: {
+            videos: true
+          }
+        }
+      }
     });
 
     if (!existingCourse) {
       return res.status(404).json({ message: 'Course not found' });
     }
 
-    // Delete course
-    await prisma.course.delete({
-      where: { id: courseId },
+    // Use transaction to ensure all deletes succeed or fail together
+    await prisma.$transaction(async (prisma) => {
+      // Step 1: Delete all videos from all modules in this course
+      for (const module of existingCourse.modules) {
+        if (module.videos.length > 0) {
+          await prisma.video.deleteMany({
+            where: {
+              moduleId: module.id
+            }
+          });
+        }
+      }
+
+      // Step 2: Delete all modules in this course
+      await prisma.module.deleteMany({
+        where: {
+          courseId: courseId
+        }
+      });
+
+      // Step 3: Delete the course
+      await prisma.course.delete({
+        where: { id: courseId }
+      });
     });
 
-    res.json({ message: 'Course deleted successfully' });
+    res.json({ 
+      message: 'Course and all related content deleted successfully',
+      deletedCourse: existingCourse.title || `Course ID: ${courseId}`
+    });
+
   } catch (error) {
     console.error('Error deleting course:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    });
   }
 };
 
@@ -162,26 +199,52 @@ exports.deleteModule = async (req, res) => {
   }
 
   try {
-    await prisma.module.delete({
-      where: {
-        id: parseInt(moduleId),
-      },
+    // Check if module exists and get its videos
+    const existingModule = await prisma.module.findUnique({
+      where: { id: parseInt(moduleId) },
+      include: {
+        videos: true
+      }
     });
 
-    res.json({ message: 'Module deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting module:', error);
-
-    // Handle case when module has related data like videos
-    if (error.code === 'P2003') {
-      return res.status(409).json({
-        error: 'Cannot delete module. It contains videos.',
-      });
+    if (!existingModule) {
+      return res.status(404).json({ error: 'Module not found' });
     }
 
-    res.status(500).json({ error: 'Failed to delete module' });
+    // Use transaction to delete module and its videos
+    await prisma.$transaction(async (prisma) => {
+      // Step 1: Delete all videos in this module
+      if (existingModule.videos.length > 0) {
+        await prisma.video.deleteMany({
+          where: {
+            moduleId: parseInt(moduleId)
+          }
+        });
+      }
+
+      // Step 2: Delete the module
+      await prisma.module.delete({
+        where: {
+          id: parseInt(moduleId)
+        }
+      });
+    });
+
+    res.json({ 
+      message: 'Module and all related videos deleted successfully',
+      deletedModule: existingModule.title || `Module ID: ${moduleId}`,
+      deletedVideosCount: existingModule.videos.length
+    });
+
+  } catch (error) {
+    console.error('Error deleting module:', error);
+    res.status(500).json({ 
+      error: 'Failed to delete module',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    });
   }
 };
+
 exports.addVideo = async (req, res) => {
   const { title, url, moduleId, thumbnail } = req.body;
 
@@ -259,5 +322,37 @@ exports.deleteVideo = async (req, res) => {
     }
 
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+exports.getCommentsByVideoId = async (req, res) => {
+  const { videoId } = req.params;
+
+  // Validate videoId
+  if (!videoId || isNaN(parseInt(videoId))) {
+    return res.status(400).json({ message: 'Invalid video ID' });
+  }
+
+  try {
+    // Fetch comments with associated user info
+    const comments = await prisma.comment.findMany({
+      where: {
+        videoId: parseInt(videoId),
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    res.json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ message: 'Failed to load comments' });
   }
 };

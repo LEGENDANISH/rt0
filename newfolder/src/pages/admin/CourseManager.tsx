@@ -8,6 +8,7 @@ interface Course {
   description: string;
   category: string;
   price: number;
+  originalprice:number;
   thumbnail: string;
   syllabus: string;
   tags?: string[];
@@ -25,6 +26,7 @@ const CourseManager: React.FC = () => {
     description: '',
     category: '',
     price: 0,
+    originalprice:0,
     thumbnail: '',
     syllabus: '',
     tags: [],
@@ -74,6 +76,7 @@ if (loading) {
       description: course.description,
       category: course.category,
       price: course.price,
+      originalprice:course.originalprice,
       thumbnail: course.thumbnail,
       syllabus: course.syllabus,
       tags: course.tags || [],
@@ -99,6 +102,7 @@ if (loading) {
     title: formData.title,
     description: formData.description,
     thumbnail: formData.thumbnail,
+    originalprice:parseFloat(formData.originalprice as any),
     price: parseFloat(formData.price as any),  };
   console.log(payload);  
   try {
@@ -119,6 +123,7 @@ if (loading) {
       description: '',
       category: '',
       price: 0,
+      originalprice:0,
       thumbnail: '',
       syllabus: '',
       tags: [],
@@ -308,6 +313,8 @@ const AddCourseModal: React.FC<AddCourseModalProps> = ({ onClose, onSubmit, form
           <option value="web3">Web3</option>
         </SelectField>
         <InputField label="Price" name="price" type="number" value={formData.price} onChange={onChange} />
+        <InputField label="OriginalPrice" name="originalprice" type="number" value={formData.originalprice} onChange={onChange} />
+
         <InputField label="Thumbnail URL" name="thumbnail" value={formData.thumbnail} onChange={onChange} />
         <InputField label="Syllabus URL" name="syllabus" value={formData.syllabus} onChange={onChange} />
         <div className="flex justify-end space-x-3 mt-6">
@@ -345,6 +352,8 @@ const EditCourseModal: React.FC<EditCourseModalProps> = ({ onClose, onSubmit, fo
           <option value="web3">Web3</option>
         </SelectField>
         <InputField label="Price" name="price" type="number" value={formData.price} onChange={onChange} />
+        <InputField label="Original Price" name="originalprice" type="number" value={formData.originalprice} onChange={onChange} />
+                  
         <InputField label="Thumbnail URL" name="thumbnail" value={formData.thumbnail} onChange={onChange} />
         <InputField label="Syllabus URL" name="syllabus" value={formData.syllabus} onChange={onChange} />
         <div className="flex justify-end space-x-3 mt-6">
