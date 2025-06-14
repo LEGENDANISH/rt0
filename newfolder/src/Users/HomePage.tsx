@@ -71,27 +71,28 @@ const HomePage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       {/* Featured Courses Banner */}
       <section className="mb-12">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-          Featured Courses
-        </h2>
-        <div className="relative overflow-hidden rounded-xl shadow-lg bg-white dark:bg-gray-800">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 p-6">
-  {latestCourses.map((course) => (
-    <Link
-      key={course.id}
-      to={`/courses/${course.id}`}
-      className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
-    >
-      <img
-        src={course.thumbnail}
-        alt={course.title}
-        className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
-      />
-    </Link>
-  ))}
-</div>
-        </div>
-      </section>
+  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
+    Featured Courses
+  </h2>
+  <div className="relative overflow-hidden rounded-xl shadow-lg bg-white dark:bg-gray-800">
+    <div className="whitespace-nowrap animate-scroll flex items-center gap-4 px-6 py-4">
+      {latestCourses.concat(latestCourses).map((course, index) => (
+        <Link
+          key={`${course.id}-${index}`}
+          to={`/courses/${course.id}`}
+          className="inline-block relative w-48 sm:w-56 md:w-64 flex-shrink-0 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300"
+        >
+          <img
+            src={course.thumbnail}
+            alt={course.title}
+            className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        </Link>
+      ))}
+    </div>
+  </div>
+</section>
+
 
       {/* Latest Courses Section */}
       <section className="mb-16">

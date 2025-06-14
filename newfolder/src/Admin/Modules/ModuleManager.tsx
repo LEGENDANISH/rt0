@@ -4,13 +4,13 @@ import axios from 'axios';
 import { Plus } from 'lucide-react';
 
 // Import from other files
-import { Video, AddVideoModal, EditVideoModal } from './ModuleManagment/VideoSystem';
+import { Video, AddVideoModal, EditVideoModal } from '../Video/VideoSystem';
 import { 
   Module, 
   ModulesList, 
   AddModuleModal, 
   EditModuleModal 
-} from './ModuleManagment/modulesystem';
+} from './ModuleSystem';
 
 const ModuleManager: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();

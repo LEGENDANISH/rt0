@@ -1,5 +1,5 @@
 
-import { Video, VideoGrid } from '../pages/admin/ModuleManagment/VideoSystem';
+import { Video, VideoGrid } from '../Admin/Video/VideoSystem';
 import { Plus, Pencil, Trash2, ChevronDown, X } from 'lucide-react';
 
 

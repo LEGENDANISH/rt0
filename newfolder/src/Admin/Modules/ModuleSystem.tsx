@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Pencil, Trash2, ChevronDown, X } from 'lucide-react';
-import { Video, VideoGrid } from './VideoSystem';
-import { ModuleCard } from '../../../components/ModuleCard';
-import { InputField } from '../../../components/Inputfeild';
+import { Video, VideoGrid } from '../Video/VideoSystem';
+import { ModuleCard } from './../../components/ModuleCard';
+import { InputField } from './../../components/Inputfeild';
 // Define Types
 export interface Module {
   id: string;

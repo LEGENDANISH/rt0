@@ -1,18 +1,18 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
-import HomePage from './pages/HomePage';
-import CoursesPage from './pages/CoursesPage';
-import CourseDetailPage from './pages/CourseDetailPage';
+import HomePage from './Users/HomePage';
+import CoursesPage from './Users/CoursesPage';
+import CourseDetailPage from './Users/CourseDetailPage';
 
-import AdminLayout from './pages/admin/AdminLayout';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import CourseManager from './pages/admin/CourseManager';
+import AdminLayout from './Admin/AdminLayout';
+import AdminDashboard from './Admin/AdminDashboard';
+import CourseManager from './Admin/Courses/CourseManager';
 import { ThemeProvider } from './context/ThemeContext';
-import MyCoursesPage from './pages/MyCoursesPage';
-import CourseModulePage from './pages/CourseModulePage';
-import VideoPlayer from './pages/VideoPlayer';
-import ModuleManager from './pages/admin/ModuleManager';
+import MyCoursesPage from './Users/MyCoursesPage';
+import CourseModulePage from './Users/CourseModulePage';
+import VideoPlayer from './Users/VideoPlayer';
+import ModuleManager from './Admin/Modules/ModuleManager';
 
 function App() {
   return (

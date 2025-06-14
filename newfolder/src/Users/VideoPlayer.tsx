@@ -22,7 +22,8 @@ interface Comment {
   id: string;
   content: string;
   userId: string;
-  username: string;
+  user: string;
+  name:string;
   createdAt: string;
 }
 
@@ -343,20 +344,19 @@ const VideoPlayer: React.FC = () => {
         </div>
 
         {/* Comments section */}
-        <div className="w-full lg:w-96 bg-white dark:bg-gray-800 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700">
+        <div className="w-full  lg:w-96 bg-white dark:bg-gray-800 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700">
           <div className="p-4">
             <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4">Comments</h2>
 
             {/* Comment Form */}
             <form onSubmit={handleAddComment} className="mb-6">
               <div className="flex gap-3">
-                
                 <div className="flex-1">
                   <textarea
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Add a comment..."
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base resize-none"
                     rows={3}
                     disabled={commentSubmitting}
                   ></textarea>
@@ -373,15 +373,32 @@ const VideoPlayer: React.FC = () => {
             </form>
 
             {/* Comments List */}
-            <div className="space-y-4 md:space-y-6 max-h-96 overflow-y-auto">
+            <div className="space-y-4   md:space-y-6 max-h-96 overflow-y-auto">
               {commentsLoading ? (
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Loading comments...</p>
+                <div className="text-center py-4">
+                  <div className="animate-pulse space-y-3">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className=" flex space-x-3">
+                        <div className="w-8 h-8  bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/4"></div>
+                          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ) : comments.length === 0 ? (
-                <p className="text-gray-500 dark:text-gray-400 text-sm">No comments yet. Be the first to comment!</p>
+                <div className="text-center py-8">
+                  <div className="text-gray-400 text-4xl mb-2">💬</div>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">No comments yet. Be the first to comment!</p>
+                </div>
               ) : (
                 comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-3">
-                    
+                  <div key={comment.id} className="flex  border-gray-200  border-b-2 gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                      {comment.user.name.charAt(0).toUpperCase()}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
                         <div className="min-w-0 flex-1">
@@ -394,7 +411,7 @@ const VideoPlayer: React.FC = () => {
                         </div>
                         <button
                           onClick={() => handleDeleteComment(comment.id)}
-                          className="text-gray-400 hover:text-red-500 transition-colors duration-200 ml-2 flex-shrink-0"
+                          className="text-gray-400 hover:text-red-500 transition-colors duration-200 ml-2 flex-shrink-0 p-1 rounded"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
