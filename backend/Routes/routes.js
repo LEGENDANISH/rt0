@@ -30,6 +30,7 @@ router.get('/courses/:courseId', coursesController.getCourseById); // Public
 
 // Authenticated user actions
 router.post('/enroll', authenticate, coursesController.enrollInCourse);
+router.get('/enrolls', coursesController.getCourseEnrollmentStats)
 router.get('/mycourses', authenticate, coursesController.getUserCourses);
 
 // Module & Video Routes

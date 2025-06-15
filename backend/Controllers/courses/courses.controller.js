@@ -21,10 +21,9 @@ exports.enrollInCourse = async (req, res) => {
 exports.addCourse = async (req, res) => {
   const { title, description, thumbnail, price, originalprice } = req.body;
 
-  const existingCourse = await prisma.course.findUnique({
-    where: { title }
-  });
-
+  const existingCourse = await prisma.course.findFirst({
+  where: { title }
+});
   if (existingCourse) {
     return res.status(400).json({ message: 'A course with this title already exists' });
   }
@@ -35,8 +34,9 @@ exports.addCourse = async (req, res) => {
     });
     res.json(course);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
+  console.error('Prisma error:', error);
+  res.status(500).json({ message: 'Server error', error });
+}
 };
 
 exports.updateCourse = async (req, res) => {
@@ -147,9 +147,76 @@ exports.getAllCourses = async (req, res) => {
   res.json(courses);
 };
 exports.getCourseById = async (req, res) => {
-  const course = await prisma.course.findUnique({
-    where: { id: +req.params.courseId },
-    include: { modules: { include: { videos: true } } }
-  });
-  res.json(course);
+  try {
+    const courseId = parseInt(req.params.courseId);
+
+    if (isNaN(courseId)) {
+      return res.status(400).json({ error: 'Invalid course ID' });
+    }
+
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        modules: {
+          include: {
+            videos: true
+          }
+        },
+        enrollments: true // 👈 This includes all enrollments for the course
+      }
+    });
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    res.json(course);
+  } catch (error) {
+    console.error('Error fetching course:', error);
+    res.status(500).json({ error: 'Failed to fetch course' });
+  }
+};
+exports.getCourseEnrollmentStats = async (req, res) => {
+  try {
+    const { courseId } = req.body;
+
+    // Validate courseId
+    const courseIdNum = parseInt(courseId);
+    if (isNaN(courseIdNum)) {
+      return res.status(400).json({ error: 'Invalid course ID' });
+    }
+
+    // Fetch course with enrollment count
+    const course = await prisma.course.findUnique({
+      where: { id: courseIdNum },
+      select: {
+        id: true,
+        title: true,
+        _count: {
+          select: {
+            enrollments: true
+          }
+        }
+      }
+    });
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Return success response
+    return res.status(200).json({
+      courseId: course.id,
+      title: course.title,
+      enrollmentCount: course._count.enrollments
+    });
+
+  } catch (error) {
+    console.error('Error getting course enrollment stats:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to get enrollment statistics',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
 };

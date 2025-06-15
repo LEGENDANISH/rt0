@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 // Define Types
 interface Course {
@@ -15,7 +15,72 @@ interface Course {
   syllabus: string;
   tags?: string[];
   featured: boolean;
+  startDate?: string; // Optional, as it wasn't in the original interface
 }
+
+// SkeletonCard Component (Adapted from LatestCoursesPage)
+const SkeletonCard: React.FC = () => {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden animate-pulse">
+      {/* Image Placeholder */}
+      <div className="h-32 sm:h-40 bg-gray-300"></div>
+
+      {/* Content */}
+      <div className="p-3 sm:p-4 space-y-4">
+        {/* Title */}
+        <div className="h-5 bg-gray-300 rounded w-3/4"></div>
+
+        {/* Description */}
+        <div className="space-y-2">
+          <div className="h-4 bg-gray-300 rounded w-full"></div>
+          <div className="h-4 bg-gray-300 rounded w-full"></div>
+          <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+        </div>
+
+        {/* Price */}
+        <div className="flex justify-between items-center mt-4">
+          <div className="h-5 bg-gray-300 rounded w-16"></div>
+          <div className="h-5 bg-gray-300 rounded w-12"></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// CourseCard Component (Reused from provided code)
+const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+      <img
+        src={course.thumbnail}
+        alt={course.title}
+        className="w-full h-28 sm:h-32 object-cover"
+      />
+      <div className="p-3 sm:p-4">
+        <h3 className="text-sm sm:text-md font-semibold text-gray-900 dark:text-white line-clamp-1">
+          {course.title}
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+          {course.description}
+        </p>
+        <div className="mt-2 sm:mt-3 flex items-center justify-between">
+          <span className="font-bold text-gray-900 dark:text-white text-sm sm:text-base">
+            ₹{course.price.toFixed(2)}
+          </span>
+          <span className="text-gray-500 dark:text-gray-400 line-through text-xs">
+            ₹{course.originalPrice}
+          </span>
+        </div>
+        <Link
+          to={`/courses/${course.id}`}
+          className="mt-3 sm:mt-4 block text-center px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs sm:text-sm"
+        >
+          View Course
+        </Link>
+      </div>
+    </div>
+  );
+};
 
 const HomePage: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -34,10 +99,24 @@ const HomePage: React.FC = () => {
         });
 
         const data = Array.isArray(res.data) ? res.data : res.data.courses || [];
-        setCourses(data);
+
+        // Sort by startDate (if available) or id descending, take top 3
+        const sortedCourses = data
+          .sort((a: Course, b: Course) => {
+            if (a.startDate && b.startDate) {
+              return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+            }
+            // Fallback to id if startDate is unavailable
+            return parseInt(b.id, 10) - parseInt(a.id, 10);
+          })
+          .slice(0, 3);
+
+        setCourses(sortedCourses);
+        setError(null);
       } catch (err: any) {
         console.error('Failed to load courses:', err.message);
         setError('Could not load courses. Please try again later.');
+        setCourses([]);
       } finally {
         setLoading(false);
       }
@@ -46,235 +125,95 @@ const HomePage: React.FC = () => {
     fetchCourses();
   }, []);
 
-  if (loading) {
-    return <SkeletonLoader />;
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <p className="text-red-500">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-
-  const featuredCourses = courses.filter((c) => c.featured).slice(0, 3);
-  const latestCourses = courses.slice(0, 6); // First 6 regular courses
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Featured Courses Banner */}
-      <section className="mb-12">
-  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-    Featured Courses
-  </h2>
-  <div className="relative overflow-hidden rounded-xl shadow-lg bg-white dark:bg-gray-800">
-    <div className="whitespace-nowrap animate-scroll flex items-center gap-4 px-6 py-4">
-      {latestCourses.concat(latestCourses).map((course, index) => (
+    <div className="container mx-auto px-2 sm:px-4 py-6 sm:py-8">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+          Latest Courses
+        </h1>
         <Link
-          key={`${course.id}-${index}`}
-          to={`/courses/${course.id}`}
-          className="inline-block relative w-48 sm:w-56 md:w-64 flex-shrink-0 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300"
+          to="/courses"
+          className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm sm:text-base"
         >
-          <img
-            src={course.thumbnail}
-            alt={course.title}
-            className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </Link>
-      ))}
-    </div>
-  </div>
-</section>
-
-
-      {/* Latest Courses Section */}
-      <section className="mb-16">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Latest Courses</h2>
-          <Link
-            to="/courses"
-            className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
-          >
-            Explore All
-            <ArrowRight className="ml-1 h-4 w-4" />
-          </Link>
-        </div>
-
-        {latestCourses.length === 0 ? (
-          <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-            No courses found.
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {latestCourses.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Why Choose Us */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-800 -mx-4 px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            Why Choose Our Courses?
-          </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 mb-10">
-            Learn from industry experts and get hands-on experience with the latest technologies
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl shadow-sm">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-300 mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Project-Based Learning
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Build real-world projects that you can showcase in your portfolio
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl shadow-sm">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-300 mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0 -3.332.477 -4.5 1.253" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Comprehensive Curriculum
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Our courses cover all aspects of modern web development
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="bg-white dark:bg-gray-700 p-6 rounded-xl shadow-sm">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-300 mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Community Support
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                Join a community of developers to learn and grow together
-              </p>
-            </div>
-          </div>
-
-          <Link
-            to="/courses"
-            className="mt-10 inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full transition-colors duration-200"
-          >
-            Find Your Course
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
-        </div>
-      </section>
-    </div>
-  );
-};
-
-export default HomePage;
-
-// Helper Component: CourseCard
-const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
-  return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      <img
-        src={course.thumbnail}
-        alt={course.title}
-        className="w-full h-32 object-cover"
-      />
-      <div className="p-4">
-        <h3 className="text-md font-semibold text-gray-900 dark:text-white line-clamp-1">
-          {course.title}
-        </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-          {course.description}
-        </p>
-        <div className="mt-3 flex items-center justify-between">
-          <span className="font-bold text-gray-900 dark:text-white">
-            ₹{course.price.toFixed(2)}
-          </span>
-          <span className="text-gray-500 dark:text-gray-400 line-through text-xs">
-            ₹{course.originalprice.toFixed(2)}
-          </span>
-        </div>
-        <Link
-          to={`/courses/${course.id}`}
-          className="mt-4 block text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
-        >
-          View Course
+          Explore All
+          <ArrowRight className="ml-1 h-4 w-4" />
         </Link>
       </div>
-    </div>
-  );
-};
 
-// Skeleton Loader
-const SkeletonLoader = () => {
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <section className="mb-12">
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-          Featured Courses
-        </h2>
-        <div className="relative overflow-hidden rounded-xl shadow-lg bg-white dark:bg-gray-800 animate-pulse">
-          <div className="flex space-x-4 p-6">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="w-full md:w-1/3 flex-shrink-0">
-                <div className="w-full h-48 bg-gray-300 dark:bg-gray-600 rounded-t-lg"></div>
-                <div className="p-4">
-                  <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full mb-2"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-2/4 mb-4"></div>
-                  <div className="h-8 bg-gray-200 dark:bg-gray-600 rounded w-full"></div>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Loading State with Skeleton Cards */}
+      {loading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+          {[...Array(3)].map((_, index) => (
+            <SkeletonCard key={index} />
+          ))}
         </div>
-      </section>
+      )}
 
-      <section className="mb-16">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Latest Courses</h2>
-          <div className="flex items-center text-blue-600 dark:text-blue-400">
-            <span>Explore All</span>
-            <ArrowRight className="ml-1 h-4 w-4" />
-          </div>
+      {/* Error State */}
+      {!loading && error && (
+        <div className="text-center py-12 sm:py-16">
+          <p className="text-red-500 text-sm sm:text-lg">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm sm:text-base"
+          >
+            Try Again
+          </button>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-              <div className="w-full h-32 bg-gray-300 dark:bg-gray-600"></div>
-              <div className="p-4">
-                <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-full mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-2/4 mb-4"></div>
-                <div className="h-8 bg-gray-200 dark:bg-gray-600 rounded w-full"></div>
-              </div>
+      {/* Empty State */}
+      {!loading && !error && courses.length === 0 && (
+        <div className="text-center py-12 sm:py-16">
+          <h3 className="text-lg sm:text-xl font-medium text-gray-700 dark:text-gray-300">
+            No courses found
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm sm:text-base">
+            Check back later for new courses.
+          </p>
+        </div>
+      )}
+
+      {/* Course Grid */}
+      {!loading && !error && courses.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+          {courses.map((course, index) => (
+            <div
+              key={course.id}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <CourseCard course={course} />
             </div>
           ))}
         </div>
-      </section>
+      )}
     </div>
   );
 };
+
+// Add custom animation for fade-in effect
+const styles = `
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+`;
+
+// Inject styles into the document
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
+}
+
+export default HomePage;

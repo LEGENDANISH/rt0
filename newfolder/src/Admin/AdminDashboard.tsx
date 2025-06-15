@@ -97,7 +97,6 @@ const AdminDashboard: React.FC = () => {
                   <thead>
                     <tr className="text-left">
                       <th className="p-3 text-sm font-medium text-gray-500 dark:text-gray-400">Title</th>
-                      <th className="p-3 text-sm font-medium text-gray-500 dark:text-gray-400">Category</th>
                       <th className="p-3 text-sm font-medium text-gray-500 dark:text-gray-400">Price</th>
                       <th className="p-3 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
                     </tr>
@@ -108,9 +107,7 @@ const AdminDashboard: React.FC = () => {
                         <td className="p-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
                           {course.title}
                         </td>
-                        <td className="p-3 text-sm text-gray-900 dark:text-white capitalize whitespace-nowrap">
-                          {course.category}
-                        </td>
+                        
                         <td className="p-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
                           ₹{course.price.toFixed(2)}
                         </td>

@@ -97,21 +97,7 @@ const AdminLayout: React.FC = () => {
             <span>Courses</span>
           </NavLink>
 
-          {/* Settings Link */}
-          <NavLink
-            to="/admin/settings"
-            className={({ isActive }) =>
-              `flex items-center px-4 py-2 rounded-lg transition-colors ${
-                isActive
-                  ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`
-            }
-          >
-            <Settings className="mr-3 h-5 w-5" />
-            <span>Settings</span>
-          </NavLink>
-
+         
           {/* Modules Dropdown */}
           <div className="space-y-1">
             <button
